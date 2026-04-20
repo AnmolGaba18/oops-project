@@ -9,4 +9,3 @@ public class EmergencySystemApplication {
     public static void main(String[] args) {
         SpringApplication.run(EmergencySystemApplication.class, args);
     }
-}
