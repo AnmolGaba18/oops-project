@@ -1,10 +1,8 @@
 package com.disaster;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "resources")
 public class Resource {
 
     @Id
@@ -12,32 +10,27 @@ public class Resource {
     private Long id;
 
     private String name;
+
     private String type;
-    private String disasterType;
+
+    private String disaster;
+
     private String severity;
 
     private double latitude;
+
     private double longitude;
 
     private boolean available;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     public Resource() {}
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -56,12 +49,12 @@ public class Resource {
         this.type = type;
     }
 
-    public String getDisasterType() {
-        return disasterType;
+    public String getDisaster() {
+        return disaster;
     }
 
-    public void setDisasterType(String disasterType) {
-        this.disasterType = disasterType;
+    public void setDisaster(String disaster) {
+        this.disaster = disaster;
     }
 
     public String getSeverity() {
@@ -94,13 +87,5 @@ public class Resource {
 
     public void setAvailable(boolean available) {
         this.available = available;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 }
