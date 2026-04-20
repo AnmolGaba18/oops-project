@@ -54,4 +54,3 @@ public class ResourceController {
     public List<Resource> filterByType(@PathVariable String type) {
         return service.filterByType(type);
     }
-}
