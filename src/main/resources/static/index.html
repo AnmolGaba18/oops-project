@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>Disaster Response Command Dashboard</title>
+<title>Disaster Resource Mapping Dashboard</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -16,78 +15,80 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 body{
 margin:0;
 font-family:Segoe UI;
-background:#eef2f7;
+background:#f4f6f9;
 }
 
 header{
-background:#0d47a1;
+background:#1e4fa3;
 color:white;
 padding:18px;
-font-size:24px;
 text-align:center;
+font-size:24px;
 font-weight:bold;
 }
 
 .container{
-width:92%;
-margin:auto;
+display:flex;
+gap:20px;
+padding:20px;
 }
 
-.card{
+.sidebar{
+width:300px;
 background:white;
 padding:20px;
-margin-top:20px;
-border-radius:12px;
-box-shadow:0px 4px 12px rgba(0,0,0,0.12);
+border-radius:10px;
+box-shadow:0px 2px 10px rgba(0,0,0,0.1);
+}
+
+.content{
+flex:1;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0px 2px 10px rgba(0,0,0,0.1);
 }
 
 input,select{
+width:100%;
 padding:8px;
-margin:6px;
+margin-top:10px;
 border-radius:6px;
 border:1px solid #ccc;
 }
 
 button{
-background:#0d47a1;
-color:white;
+margin-top:10px;
+padding:10px;
 border:none;
-padding:8px 14px;
 border-radius:6px;
 cursor:pointer;
+background:#1e4fa3;
+color:white;
 }
 
 button:hover{
-background:#1565c0;
+background:#163d82;
 }
 
 .delete-btn{
-background:#d32f2f;
-}
-
-.delete-btn:hover{
-background:#f44336;
-}
-
-#map{
-height:500px;
-border-radius:10px;
+background:#d9534f;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
+margin-top:20px;
 }
 
 th{
-background:#0d47a1;
+background:#1e4fa3;
 color:white;
 padding:10px;
 }
 
 td{
-padding:8px;
+padding:10px;
 text-align:center;
 }
 
@@ -95,24 +96,26 @@ tr:nth-child(even){
 background:#f2f2f2;
 }
 
+#map{
+height:450px;
+margin-top:20px;
+border-radius:10px;
+}
+
 </style>
-
 </head>
-
 
 <body>
 
 <header>
-🚨 Disaster Response Resource Mapping Dashboard
+🚨 Disaster Resource Mapping Dashboard
 </header>
-
 
 <div class="container">
 
+<div class="sidebar">
 
-<div class="card">
-
-<h3>Add / Update Resource</h3>
+<h3>Add Resource</h3>
 
 <input id="name" placeholder="Resource Name">
 
@@ -123,19 +126,17 @@ background:#f2f2f2;
 <option>Rescue Team</option>
 </select>
 
-<select id="disasterType">
-<option>Flood</option>
+<select id="disaster">
 <option>Earthquake</option>
+<option>Flood</option>
 <option>Fire</option>
 <option>Landslide</option>
-<option>Cyclone</option>
 </select>
 
 <select id="severity">
 <option>LOW</option>
 <option>MEDIUM</option>
 <option>HIGH</option>
-<option>CRITICAL</option>
 </select>
 
 <input id="latitude" placeholder="Latitude">
@@ -152,22 +153,7 @@ background:#f2f2f2;
 </div>
 
 
-
-<div class="card">
-
-<h3>Search Resource</h3>
-
-<input id="searchBox" placeholder="Search by name">
-
-<button onclick="searchResource()">Search</button>
-
-<button onclick="loadResources()">Reset</button>
-
-</div>
-
-
-
-<div class="card">
+<div class="content">
 
 <h3>Resource List</h3>
 
@@ -185,15 +171,9 @@ background:#f2f2f2;
 </tr>
 </thead>
 
-<tbody id="resourceTable"></tbody>
+<tbody id="tableBody"></tbody>
 
 </table>
-
-</div>
-
-
-
-<div class="card">
 
 <h3>Live Map View</h3>
 
@@ -201,19 +181,16 @@ background:#f2f2f2;
 
 </div>
 
-
 </div>
-
 
 
 <script>
 
-let map=L.map('map').setView([30.3165,78.0322],11);
+let map = L.map('map').setView([30.3165,78.0322],12);
 
 L.tileLayer(
-'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map);
-
 
 
 function loadResources(){
@@ -224,7 +201,7 @@ fetch("/resources")
 
 .then(data=>{
 
-let table=document.getElementById("resourceTable");
+let table=document.getElementById("tableBody");
 
 table.innerHTML="";
 
@@ -236,25 +213,33 @@ map.removeLayer(layer);
 data.forEach(r=>{
 
 table.innerHTML+=`
+
 <tr>
+
 <td>${r.id}</td>
 <td>${r.name}</td>
 <td>${r.type}</td>
-<td>${r.disasterType}</td>
+<td>${r.disaster}</td>
 <td>${r.severity}</td>
 <td>${r.available?"✅":"❌"}</td>
+
 <td>
 <button class="delete-btn"
 onclick="deleteResource(${r.id})">
 Delete
 </button>
 </td>
+
 </tr>
 `;
 
+if(r.latitude && r.longitude){
+
 L.marker([r.latitude,r.longitude])
 .addTo(map)
-.bindPopup(`<b>${r.name}</b><br>${r.type}<br>${r.disasterType}`);
+.bindPopup(`<b>${r.name}</b><br>${r.type}`);
+
+}
 
 });
 
@@ -263,18 +248,17 @@ L.marker([r.latitude,r.longitude])
 }
 
 
-
 function addResource(){
 
 let resource={
 
-name:name.value,
-type:type.value,
-disasterType:disasterType.value,
-severity:severity.value,
-latitude:parseFloat(latitude.value),
-longitude:parseFloat(longitude.value),
-available:available.value==="true"
+name:document.getElementById("name").value,
+type:document.getElementById("type").value,
+disaster:document.getElementById("disaster").value,
+severity:document.getElementById("severity").value,
+latitude:parseFloat(document.getElementById("latitude").value),
+longitude:parseFloat(document.getElementById("longitude").value),
+available:document.getElementById("available").value==="true"
 
 };
 
@@ -288,9 +272,9 @@ headers:{
 
 body:JSON.stringify(resource)
 
-}).then(()=>{
+})
 
-alert("Resource Added Successfully");
+.then(()=>{
 
 loadResources();
 
@@ -299,37 +283,21 @@ loadResources();
 }
 
 
-
 function deleteResource(id){
-
-if(!confirm("Delete this resource?")) return;
 
 fetch(`/resources/${id}`,{
 
 method:"DELETE"
 
-}).then(()=>{
+})
 
-alert("Resource Deleted");
+.then(()=>{
 
 loadResources();
 
 });
 
 }
-
-
-
-function searchResource(){
-
-fetch(`/resources/search/${searchBox.value}`)
-
-.then(res=>res.json())
-
-.then(console.log);
-
-}
-
 
 
 loadResources();
